@@ -55,4 +55,6 @@ for h in headers.find_all('th'):
     team_standings.append(h.get('data-stat'))
 print(team_standings)
 ```
+['team', 'wins', 'losses', 'ties', 'win_loss_perc', 'points', 'points_opp', 'points_diff', 'mov', 'sos_total', 'srs_total', 'srs_offense', 'srs_defense']
 
+Now that the future column headers for our standings table is done, let's pull the teams and their standings information.
