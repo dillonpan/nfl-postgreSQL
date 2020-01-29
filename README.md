@@ -11,10 +11,12 @@ To show that we can take data from multiple sources and combine them successfull
 
 # Scraping and Importing Standings to Python
 
-We can use the package "requests" to pull the website and then take the websites content. Since the website is html, we can use the package "BeautifulSoup", which allows us to parse and retrieve the sections/data we need specifically off of the html webpage.
+We can use the package "requests" to pull the website and then take the websites content. Since the website is html, we can use the package "BeautifulSoup", which allows us to parse and retrieve the sections/data we need specifically off of the html webpage. psycopg2 & pandas will be used later.
 ```
 import requests
 from bs4 import BeautifulSoup
+import psycopg2
+import pandas
 
 response = requests.get('https://www.pro-football-reference.com/years/2019/')
 content = response.content
@@ -57,4 +59,34 @@ print(team_standings)
 ```
 ['team', 'wins', 'losses', 'ties', 'win_loss_perc', 'points', 'points_opp', 'points_diff', 'mov', 'sos_total', 'srs_total', 'srs_offense', 'srs_defense']
 
-Now that the future column headers for our standings table is done, let's pull the teams and their standings information.
+Now that the future column headers for our standings table is done, let's pull the teams and their standings information. The following function will do just that. We're making it a function because we still need to pull the data for the NFC standings. Since both tables hold the same type of data, we can reuse this function. 
+
+```
+def pull_standings(conference):
+    standings_list = []
+    for team in conference[1:]:
+        # below to filter out the division name rows
+        if len(team) > 1:
+            for stat in team:
+                # some team names have an asterisk or plus sign so we will remove them
+                stat = stat.text.replace('*', '').replace('+', '')
+                standings_list.append(stat)
+    return standings_list
+```
+```
+afc_standings = pull_standings(afc_overall)
+print(afc_standings)
+```
+['New England Patriots', '12', '4', '0', '.750', '420', '225', '195', '12.2', '-1.8', '10.4', '2.8', '7.6', 'Buffalo Bills', '10', '6', etc etc etc....
+
+Let's go to the NFC side now. We can inspect the webpage as we previously did for the AFC side to find it's pretty much identical, just a slight id change from "all_AFC" to "all_NFC". We also don't need to redo the headers as we will merge both conferences under the same table and headers.
+```
+nfc = parser.find('div', id='all_NFC')
+nfc_overall = nfc.find_all('tr')
+nfc_standings = pull_standings(nfc_overall)
+print(nfc_standings)
+```
+['Philadelphia Eagles', '9', '7', '0', '.563', '385', '354', '31', '1.9', '-1.7', '0.3', '0.7', '-0.4', 'Dallas Cowboys', '8', '8', etc etc etc...
+
+We now have two long lists of names, standings, and stats of teams. We'll adjust both lists later on.
+
