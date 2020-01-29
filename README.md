@@ -114,3 +114,22 @@ conn = psycopg2.connect(dbname="nfl_2019", user=[username], password=[password])
 conn.autocommit = True
 cur = conn.cursor()
 ```
+
+
+
+
+
+Normally, you could use a print(cursor.fetchall()) line after executing a Select statement to print it but the staement will come out as a single line and the columns you chose won't appear either. The below function will print the Select statements as individual lines and will also include the selected columns names as well:
+
+```
+def printsql():
+    try:
+        column_names = [desc[0] for desc in cur.description]
+        print(column_names)
+        for line in cur.fetchall():
+            print(line)
+        print()
+    except:
+        print('no printable SQL execution')
+```
+
