@@ -95,3 +95,24 @@ Now that we have the first table, let's create the database + standings table be
 
 Note: For personal security, I have replaced my actual username & password with the following: [username] & [password]
 
+Before we can execute queries, we have to connect to the server by creating a connect object. Afterwards, we create a cursor on the connection to execute queries. We are setting autocommit to True
+```
+# Connect to PostgresSQL server, in general
+conn = psycopg2.connect(user="postgres", password="Panman12")
+conn.autocommit = True
+cur = conn.cursor()
+
+# Create the database
+cur.execute('COMMIT;')
+cur.execute('DROP DATABASE IF EXISTS nfl_2019;')
+cur.execute('CREATE DATABASE nfl_2019;')
+
+# Close the cursor & connection
+cur.close()
+conn.close()
+
+# Re-connect to server directly in to the newly created database
+conn = psycopg2.connect(dbname="nfl_2019", user="postgres", password="Panman12")
+conn.autocommit = True
+cur = conn.cursor()
+```
