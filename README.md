@@ -90,3 +90,8 @@ print(nfc_standings)
 
 We now have two long lists of names, standings, and stats of teams. We'll adjust both lists later on.
 
+# Creating the PostgreSQL database
+Now that we have the first table, let's create the database + standings table before we move on to the other two data sets. In Python, there's a PostgreSQL database adapter named Psycopg. The current package is psycopg2, which we imported in the beginning. We will also be able to double check our creations using pgAdmin4, a management application that you can get while downloading PostgreSQL.
+
+Note: For personal security, I have replaced my actual username & password with the following: [username] & [password]
+
