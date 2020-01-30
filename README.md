@@ -142,10 +142,10 @@ CREATE TABLE nfl.standings(
              standings_header[12]))
 ```
 
-We can now insert the values within both AFC and NFC standings lists into the newly created table. Remember how each team and their respective data takes up 13 indexes? We can take that in to consideration as well:
+We can now insert the values within both AFC and NFC standings lists into the newly created table. Remember how each team and their respective data takes up 13 indexes? We can take that in to consideration as well. Another thing about the function below is that we are inserting smaller lists of team data as values. The "%s" are placeholders for values within the list so we dont need to go through each cell of the team list. When we created the tables, we listed what kind of data each column was so it will be read and converted through PostgreSQL:
 ```
 # create function to import data to team table
-def import_standings_header(standings_list):
+def import_standings_data(standings_list):
     first = 0
     last = 13
     while last <= len(standings_list):
@@ -159,8 +159,8 @@ def import_standings_header(standings_list):
 
 
 # use the function for both conferences
-import_standings_header(afc_standings)
-import_standings_header(nfc_standings)
+import_standings_data(afc_standings)
+import_standings_data(nfc_standings)
 ```
 
 Normally, you could use a print(cursor.fetchall()) line after executing a Select statement to print it but the staement will come out as a single line and the columns you chose won't appear either. The below function will print the Select statements as individual lines and will also include the selected columns names as well:
