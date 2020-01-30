@@ -268,4 +268,70 @@ print(p_headers)
 ```  
 ['name', 'team', 'position', 'age', 'games', 'g_started', 'pass_com', 'pass_att', 'pass_yrds', 'pass_tds', 'pass_ints', 'rush_att', 'rush_yrds', 'rush_tds', 'rec_tgts', 'rec_catch', 'rec_yrds', 'rec_tds', 'fumbles', 'fum_lost', 'fan_pts']
 
+Looking in to the CSV file itself, we've run in to an issue. For the players, the teams listed arent the full names but the team abbreviations. Example of CSV column for "team":
 
+team
+------  
+CAR  
+BAL  
+TEN  
+GNB  
+DAL  
+
+One way to replace the abbrivations with their full names is to create a map and apply it to the "team" column:
+```
+team_dict = {
+    "ARI": "Arizona Cardinals",
+    "ATL": "Atlanta Falcons",
+    "BAL": "Baltimore Ravens",
+    "BUF": "Buffalo Bills",
+    "CAR": "Carolina Panthers",
+    "CHI": "Chicago Bears",
+    "CIN": "Cincinnati Bengals",
+    "CLE": "Cleveland Browns",
+    "DAL": "Dallas Cowboys",
+    "DEN": "Denver Broncos",
+    "DET": "Detroit Lions",
+    "GNB": "Green Bay Packers",
+    "HOU": "Houston Texans",
+    "IND": "Indianapolis Colts",
+    "JAX": "Jacksonville Jaguars",
+    "KAN": "Kansas City Chiefs",
+    "LAC": "Los Angeles Chargers",
+    "LAR": "Los Angeles Rams",
+    "MIA": "Miami Dolphins",
+    "MIN": "Minnesota Vikings",
+    "NOR": "New Orleans Saints",
+    "NWE": "New England Patriots",
+    "NYG": "New York Giants",
+    "NYJ": "New York Jets",
+    "OAK": "Oakland Raiders",
+    "PHI": "Philadelphia Eagles",
+    "PIT": "Pittsburgh Steelers",
+    "SEA": "Seattle Seahawks",
+    "SFO": "San Francisco 49ers",
+    "TAM": "Tampa Bay Buccaneers",
+    "TEN": "Tennessee Titans",
+    "WAS": "Washington Redskins"
+}
+
+p_data['team'] = p_data['team'].map(team_dict)
+```
+
+Let's take a look at the value counts for the "team" column now to ensure our map worked. Let's also see how many total players are in our file:
+```
+print(len(p_data))
+
+print(p_data['team'].value_counts(dropna=False))
+```
+450
+Detroit Lions           17  
+NaN                     16  
+New York Giants         16  
+Atlanta Falcons         16  
+Cleveland Browns        15  
+
+Looks like our map generally worked except we have some NaN values, which is weird. Upon further review, it seems the NaN values were for players who played with more than a single team during the 2019 season. We prefer players who played on a single team so let's drop these 16 players since theres still 434 players we can use:
+```
+p_data = p_data.dropna(subset=['team'], axis=0)  # drop the entire row, default axis =0
+```
