@@ -89,7 +89,7 @@ print(nfc_standings)
 
 We now have two long lists of names, standings, and stats of teams. We'll adjust both lists later on.
 
-# Creating the PostgreSQL database
+# Creating the PostgreSQL Database, Schema, and Table
 Now that we have the first table, let's create the database + standings table before we move on to the other two data sets. In Python, there's a PostgreSQL database adapter named Psycopg. The current package is psycopg2, which we imported in the beginning. We will also be able to double check our creations using pgAdmin4, a management application that you can get while downloading PostgreSQL.
 
 Note: For personal security, I have replaced my actual username & password with the following: [username] & [password]
@@ -144,6 +144,7 @@ CREATE TABLE nfl.standings(
              standings_header[12]))
 ```
 
+# Inserting Data
 We can now insert the values within both AFC and NFC standings lists into the newly created table. Remember how each team and their respective data takes up 13 indexes? We can take that in to consideration as well. Another thing about the function below is that we are inserting smaller lists of team data as values. The "%s" are placeholders for values within the list so we dont need to go through each cell of the team list. When we created the tables, we listed what kind of data each column was so it will be read and converted through PostgreSQL:
 ```
 # create function to import data to team table
