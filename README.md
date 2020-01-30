@@ -37,7 +37,7 @@ afc_overall = afc.find_all('tr')
 for section in afc_overall:
     print(section)
     print()
-```
+```  
 Note: "afc_overall" becomes a list type variable which holds each row in an index.
 
 It's a lot of rows so I won't paste it here but in general it's lines starting with "<tr>" and ending with "</tr>". Once you have run the code, you'll notice theres about three kinds of rows which you can see on the webpage:
@@ -198,7 +198,7 @@ printsql()
 
 # Pulling Data from a CSV File and Creating nfl.offense Table
 So the next data set we will import in to PostgreSQL table is the offensive stats of all NFL teams during the 2019 regular season. This could have also been pulled from the website via web scrapping, however I decided to export the table in to a CSV to show an alternative method. This process is much simpler than web scraping only because we don't have unnecesary information like we did going through the entire html webpage.
-The first thing we need to do is use the pandas package within Python to read the file. Afterwards, just like the standings data, we can make a list for the offense column headers.:
+The first thing we need to do is use the pandas package within Python to read the file. Afterwards, just like the standings data, we can make a list for the offense column headers:  
 Note: I've replaced the destination folder of my file with [file location]
 ```
 o_data = pandas.read_csv('[file location]OffenseStats.csv')
@@ -257,3 +257,15 @@ printsql()
 ('Arizona Cardinals', 361, 6, 355, 554, 3477, 20, 12, 396, 1990, 18)  
 ('Atlanta Falcons', 381, 10, 459, 684, 4714, 29, 15, 362, 1361, 10)  
 ('Baltimore Ravens', 531, 7, 289, 440, 3225, 37, 8, 596, 3296, 21)  
+
+# Pulling and Cleaning Data to Create nfl.players Table
+Just like the offensive statistics, the data on players are in a CSV file. Thus, we will use pandas to open it and create a dataframe:
+```
+p_data = pandas.read_csv('PlayerStats.csv')
+
+p_headers = p_data.columns.tolist()
+print(p_headers)
+```  
+['name', 'team', 'position', 'age', 'games', 'g_started', 'pass_com', 'pass_att', 'pass_yrds', 'pass_tds', 'pass_ints', 'rush_att', 'rush_yrds', 'rush_tds', 'rec_tgts', 'rec_catch', 'rec_yrds', 'rec_tds', 'fumbles', 'fum_lost', 'fan_pts']
+
+
