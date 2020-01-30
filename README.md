@@ -180,7 +180,7 @@ def printsql():
         print('no printable SQL execution')
 ```
 
-Now we have created the database, schema, standings table and inserting the values to the table. Let's doing a test SELECT statement and print it out:
+Now we have created the database, schema, standings table and inserting the values to the table. Let's do a test Select statement and print it out:
 ```
 cur.execute('''
     SELECT *
@@ -196,3 +196,4 @@ printsql()
 ('Atlanta Falcons', 7, 9, 0, 0.438, 381, 399, -18, -1.1, 1.1, -0.1, 0.3, -0.4)  
 ('Baltimore Ravens', 14, 2, 0, 0.875, 531, 282, 249, 15.6, 0.1, 15.6, 11.0, 4.7)  
 
+# Pulling Data from CSV Files
