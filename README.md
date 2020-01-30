@@ -114,8 +114,10 @@ conn.autocommit = True
 cur = conn.cursor()
 ```
 
-How PostgreSQL works is that there is data within -> tables -> schemas -> databases. Once a database is created, a general default "public" schema is created as well. However, let's create a new schema for our project to place tables within. Second, remember how we placed the standings headers in a list called "standings_header"? It looked like this:
+How PostgreSQL works is that there is data within -> tables -> schemas -> databases. Once a database is created, a general default "public" schema is created as well. However, let's create a new schema for our project to place tables within. Second, remember how we placed the standings headers in a list called "standings_header"? It looked like this:  
+
 ['team', 'wins', 'losses', 'ties', 'win_loss_perc', 'points', 'points_opp', 'points_diff', 'mov', 'sos_total', 'srs_total', 'srs_offense', 'srs_defense']
+
 We can now use the indexes of this list and some string formatting to create and label the data types of each column for the table:
 ```
 cur.execute('''
@@ -176,4 +178,20 @@ def printsql():
     except:
         print('no printable SQL execution')
 ```
+
+Now we have created the database, schema, standings table and inserting the values to the table. Let's doing a test SELECT statement and print it out:
+```
+cur.execute('''
+    SELECT *
+    FROM nfl.standings
+    ORDER BY team
+    LIMIT 3
+''')
+
+printsql()
+```
+['team', 'wins', 'losses', 'ties', 'win_loss_perc', 'points', 'points_opp', 'points_diff', 'mov', 'sos_total', 'srs_total', 'srs_offense', 'srs_defense']  
+('Arizona Cardinals', 5, 10, 1, 0.344, 361, 442, -81, -5.1, 1.8, -3.2, -0.3, -2.9)  
+('Atlanta Falcons', 7, 9, 0, 0.438, 381, 399, -18, -1.1, 1.1, -0.1, 0.3, -0.4)  
+('Baltimore Ravens', 14, 2, 0, 0.875, 531, 282, 249, 15.6, 0.1, 15.6, 11.0, 4.7)  
 
