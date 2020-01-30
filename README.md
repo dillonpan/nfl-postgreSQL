@@ -144,7 +144,7 @@ CREATE TABLE nfl.standings(
              standings_header[12]))
 ```
 
-# Inserting Data
+# Inserting Data to nfl.standings Table
 We can now insert the values within both AFC and NFC standings lists into the newly created table. Remember how each team and their respective data takes up 13 indexes? We can take that in to consideration as well. Another thing about the function below is that we are inserting smaller lists of team data as values. The "%s" are placeholders for values within the list so we dont need to go through each cell of the team list. When we created the tables, we listed what kind of data each column was so it will be read and converted through PostgreSQL:
 ```
 # create function to import data to team table
@@ -196,4 +196,34 @@ printsql()
 ('Atlanta Falcons', 7, 9, 0, 0.438, 381, 399, -18, -1.1, 1.1, -0.1, 0.3, -0.4)  
 ('Baltimore Ravens', 14, 2, 0, 0.875, 531, 282, 249, 15.6, 0.1, 15.6, 11.0, 4.7)  
 
-# Pulling Data from CSV Files
+# Pulling Data from a CSV File and Creating nfl.offense Table
+So the next data set we will import in to PostgreSQL table is the offensive stats of all NFL teams during the 2019 regular season. This could have also been pulled from the website via web scrapping, however I decided to export the table in to a CSV to show an alternative method. This process is much simpler than web scraping only because we don't have unnecesary information like we did going through the entire html webpage.
+The first thing we need to do is use the pandas package within Python to read the file. Afterwards, just like the standings data, we can make a list for the offense column headers.:
+Note: I've replaced the destination folder of my file with [file location]
+```
+o_data = pandas.read_csv('[file location]OffenseStats.csv')
+
+o_headers = list(o_data.columns)
+print(o_headers)
+```
+
+['team', 't_points', 'fumbles_lost', 'pass_cpt', 'pass_att', 'pass_yrds', 'pass_tds', 'ints', 'rush_att', 'rush_yrds', 'rush_tds']
+
+Since we are still connected to the database, we don't need to reconnect to it. Just like we did previously wth the standings, we can use string formatting and the headers list to create the nfl.offense table:
+```
+cur.execute('''
+CREATE TABLE nfl.offense(
+    {} TEXT NOT NULL PRIMARY KEY REFERENCES nfl.standings(team),
+    {} INTEGER NOT NULL,
+    {} INTEGER NOT NULL,
+    {} INTEGER NOT NULL,
+    {} INTEGER NOT NULL,
+    {} INTEGER NOT NULL,
+    {} INTEGER NOT NULL,
+    {} INTEGER NOT NULL,
+    {} INTEGER NOT NULL,
+    {} INTEGER NOT NULL,
+    {} INTEGER NOT NULL
+);'''.format(o_headers[0], o_headers[1], o_headers[2], o_headers[3], o_headers[4], o_headers[5],
+             o_headers[6], o_headers[7], o_headers[8], o_headers[9], o_headers[10]))
+```
