@@ -258,7 +258,7 @@ printsql()
 ('Atlanta Falcons', 381, 10, 459, 684, 4714, 29, 15, 362, 1361, 10)  
 ('Baltimore Ravens', 531, 7, 289, 440, 3225, 37, 8, 596, 3296, 21)  
 
-# Pulling and Cleaning Data to Create nfl.players Table
+# Pulling/Cleaning Data and Building nfl.players Table
 Just like the offensive statistics, the data on players are in a CSV file. Thus, we will use pandas to open it and create a dataframe:
 ```
 p_data = pandas.read_csv('PlayerStats.csv')
@@ -335,3 +335,74 @@ Looks like our map generally worked except we have some NaN values, which is wei
 ```
 p_data = p_data.dropna(subset=['team'], axis=0)  # drop the entire row, default axis =0
 ```
+
+Just like with the other tables, let's create the table and insert the values for nfl.players. Just like with nfl.offense, we will create a foreign key for nfl.players that will connect the team name to the team name column in nfl.standings. Afterwards, we can create a test Select statement. This time we'll use a count statement to show the table includes the remaining 434 players:
+```
+cur.execute('''
+CREATE TABLE nfl.players(
+    {} TEXT NOT NULL PRIMARY KEY,
+    {} TEXT NOT NULL REFERENCES nfl.standings(team),
+    {} TEXT NOT NULL,
+    {} INTEGER NOT NULL,
+    {} INTEGER NOT NULL,
+    {} INTEGER NOT NULL,
+    {} INTEGER NOT NULL,
+    {} INTEGER NOT NULL,
+    {} INTEGER NOT NULL,
+    {} INTEGER NOT NULL,
+    {} INTEGER NOT NULL,
+    {} INTEGER NOT NULL,
+    {} INTEGER NOT NULL,
+    {} INTEGER NOT NULL,
+    {} INTEGER NOT NULL,
+    {} INTEGER NOT NULL,
+    {} INTEGER NOT NULL,
+    {} INTEGER NOT NULL,
+    {} INTEGER NOT NULL,
+    {} INTEGER NOT NULL,
+    {} INTEGER NOT NULL
+);'''.format(p_headers[0], p_headers[1], p_headers[2], p_headers[3], p_headers[4], p_headers[5],
+             p_headers[6], p_headers[7], p_headers[8], p_headers[9], p_headers[10], p_headers[11],
+             p_headers[12], p_headers[13], p_headers[14], p_headers[15], p_headers[16],
+             p_headers[17], p_headers[18], p_headers[19], p_headers[20]))
+
+insert_values(p_data, 'nfl.players')
+
+cur.execute('''
+    SELECT COUNT(*)
+    FROM nfl.players
+''')
+
+printsql()
+```
+
+['count']
+(434,)
+
+Perfect! Now that all 3 tables have been created and contain their respective data, we can run some SQL statements to answer some questions:  
+Q1. List the total team passing tds, the players who caught at least 1 td, and the number of catching tds they had this year. Order the query by who caught the most tds first:
+```
+cur.execute('''SELECT standings.team, offense.pass_tds, players.name, players.rec_tds
+                FROM nfl.standings
+                JOIN nfl.offense ON offense.team = standings.team
+                JOIN nfl.players ON players.team = offense.team
+                WHERE standings.team = 'San Francisco 49ers' AND players.rec_tds >= 1
+                ORDER BY players.rec_tds DESC
+            ''')
+
+printsql()
+```
+['team', 'pass_tds', 'name', 'rec_tds']  
+('San Francisco 49ers', 28, 'Kendrick Bourne', 5)  
+('San Francisco 49ers', 28, 'George Kittle', 5)  
+('San Francisco 49ers', 28, 'Deebo Samuel', 3)  
+('San Francisco 49ers', 28, 'Raheem Mostert', 2)  
+('San Francisco 49ers', 28, 'Dante Pettis', 2)  
+('San Francisco 49ers', 28, 'Ross Dwelley', 2)  
+('San Francisco 49ers', 28, 'Richie James', 1)  
+('San Francisco 49ers', 28, 'Tevin Coleman', 1)  
+('San Francisco 49ers', 28, 'Matt Breida', 1)  
+('San Francisco 49ers', 28, 'Jeff Wilson', 1)  
+('San Francisco 49ers', 28, 'Kyle Juszczyk', 1)  
+('San Francisco 49ers', 28, 'Marquise Goodwin', 1)  
+
