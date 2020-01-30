@@ -227,3 +227,6 @@ CREATE TABLE nfl.offense(
 );'''.format(o_headers[0], o_headers[1], o_headers[2], o_headers[3], o_headers[4], o_headers[5],
              o_headers[6], o_headers[7], o_headers[8], o_headers[9], o_headers[10]))
 ```
+
+# Inserting Data in to nfl.offense
+The issue with linking pandas dataframes to PostgreSQL is that numbers through pandas are generally NumPy data types, which PostgreSQL does not accept.
