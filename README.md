@@ -50,12 +50,11 @@ We're going to start pulling the data out of the section by getting the column h
 
 You can see in the image above that each cell within the header row starts with "<th>" and ends with "</th>" (one of html codes for a cell). The following code will first pull the header row out of the afc_overall list of rows then run through each cell within the row to pull the data-stat attribute and append them to a list:
 ```
-# find the team table names
 headers = afc_overall[0]
-team_standings = []
+standings_header = []
 for h in headers.find_all('th'):
-    team_standings.append(h.get('data-stat'))
-print(team_standings)
+    standings_header.append(h.get('data-stat'))
+print(standings_header)
 ```
 ['team', 'wins', 'losses', 'ties', 'win_loss_perc', 'points', 'points_opp', 'points_diff', 'mov', 'sos_total', 'srs_total', 'srs_offense', 'srs_defense']
 
@@ -115,9 +114,54 @@ conn.autocommit = True
 cur = conn.cursor()
 ```
 
+How PostgreSQL works is that there is data within -> tables -> schemas -> databases. Once a database is created, a general default "public" schema is created as well. However, let's create a new schema for our project to place tables within. Second, remember how we placed the standings headers in a list called "standings_header"? It looked like this:
+['team', 'wins', 'losses', 'ties', 'win_loss_perc', 'points', 'points_opp', 'points_diff', 'mov', 'sos_total', 'srs_total', 'srs_offense', 'srs_defense']
+We can now use the indexes of this list and some string formatting to create and label the data types of each column for the table:
+```
+cur.execute('''
+CREATE SCHEMA nfl;
+
+CREATE TABLE nfl.standings(
+    {} TEXT NOT NULL PRIMARY KEY,
+    {} INTEGER NOT NULL,
+    {} INTEGER NOT NULL,
+    {} INTEGER NOT NULL,
+    {} FLOAT NOT NULL,
+    {} INTEGER NOT NULL,
+    {} INTEGER NOT NULL,
+    {} INTEGER NOT NULL,
+    {} FLOAT NOT NULL,
+    {} FLOAT NOT NULL,
+    {} FLOAT NOT NULL,
+    {} FLOAT NOT NULL,
+    {} FLOAT NOT NULL
+);'''.format(standings_header[0], standings_header[1], standings_header[2], standings_header[3], standings_header[4],
+             standings_header[5],
+             standings_header[6], standings_header[7], standings_header[8], standings_header[9], standings_header[10],
+             standings_header[11],
+             standings_header[12]))
+```
+
+We can now insert the values within both AFC and NFC standings lists into the newly created table. Remember how each team and their respective data takes up 13 indexes? We can take that in to consideration as well:
+```
+# create function to import data to team table
+def import_standings_header(standings_list):
+    first = 0
+    last = 13
+    while last <= len(standings_list):
+        team = standings_list[first:last]
+        cur.execute('''
+            INSERT INTO nfl.standings
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
+            ''', team)
+        first += 13
+        last += 13
 
 
-
+# use the function for both conferences
+import_standings_header(afc_standings)
+import_standings_header(nfc_standings)
+```
 
 Normally, you could use a print(cursor.fetchall()) line after executing a Select statement to print it but the staement will come out as a single line and the columns you chose won't appear either. The below function will print the Select statements as individual lines and will also include the selected columns names as well:
 
