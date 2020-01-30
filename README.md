@@ -209,7 +209,7 @@ print(o_headers)
 
 ['team', 't_points', 'fumbles_lost', 'pass_cpt', 'pass_att', 'pass_yrds', 'pass_tds', 'ints', 'rush_att', 'rush_yrds', 'rush_tds']
 
-Since we are still connected to the database, we don't need to reconnect to it. Just like we did previously wth the standings, we can use string formatting and the headers list to create the offense table under the nfl schema:
+Since we are still connected to the database, we don't need to reconnect to it. Just like we did previously wth the standings, we can use string formatting and the headers list to create the offense table under the nfl schema. We also created a foreign key to link with the nfl.standings table:
 ```
 cur.execute('''
 CREATE TABLE nfl.offense(
@@ -229,4 +229,31 @@ CREATE TABLE nfl.offense(
 ```
 
 # Inserting Data in to nfl.offense
-The issue with linking pandas dataframes to PostgreSQL is that numbers through pandas are generally NumPy data types, which PostgreSQL does not accept.
+The issue with linking pandas dataframes to PostgreSQL is that numbers through pandas are generally NumPy data types, which PostgreSQL does not accept. To solve this issue, we can just turn the NumPy types in to string types and let PostgreSQL readjust them to the data type we labeled for each column. The function below takes in each row one by one in the pandas dataframe and inerts the data in to your table of choice, in ths case nf.offense. We also set it up so different dataframes with different amounts of columns can still insert data:
+
+```
+def insert_values(data, table_n):
+    for x in range(len(data)):
+        row = data.iloc[x, :].tolist()
+        str_row = [str(x) for x in row]
+        cur.execute('''
+            INSERT INTO {}
+            VALUES ({});
+            '''.format(table_n, ('%s,' * len(data.columns)).rstrip(',')), str_row)
+```
+
+Now we can use the function above to insert our o_data in to nfl.offense. Afterwards, let's do a test Select statement a a check:
+```
+insert_values(o_data, 'nfl.offense')
+
+cur.execute('''
+    SELECT *
+    FROM nfl.offense
+''')
+
+printsql()
+```
+['team', 't_points', 'fumbles_lost', 'pass_cpt', 'pass_att', 'pass_yrds', 'pass_tds', 'ints', 'rush_att', 'rush_yrds', 'rush_tds']  
+('Arizona Cardinals', 361, 6, 355, 554, 3477, 20, 12, 396, 1990, 18)  
+('Atlanta Falcons', 381, 10, 459, 684, 4714, 29, 15, 362, 1361, 10)  
+('Baltimore Ravens', 531, 7, 289, 440, 3225, 37, 8, 596, 3296, 21)  
