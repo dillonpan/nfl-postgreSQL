@@ -118,7 +118,7 @@ How PostgreSQL works is that there is data within -> tables -> schemas -> databa
 
 ['team', 'wins', 'losses', 'ties', 'win_loss_perc', 'points', 'points_opp', 'points_diff', 'mov', 'sos_total', 'srs_total', 'srs_offense', 'srs_defense']
 
-We can now use the indexes of this list and some string formatting to create and label the data types of each column for the table:
+We can now use the indexes of this list and some string formatting to create and label the data types of each column for our standings table under the nfl schema:
 ```
 cur.execute('''
 CREATE SCHEMA nfl;
@@ -209,7 +209,7 @@ print(o_headers)
 
 ['team', 't_points', 'fumbles_lost', 'pass_cpt', 'pass_att', 'pass_yrds', 'pass_tds', 'ints', 'rush_att', 'rush_yrds', 'rush_tds']
 
-Since we are still connected to the database, we don't need to reconnect to it. Just like we did previously wth the standings, we can use string formatting and the headers list to create the nfl.offense table:
+Since we are still connected to the database, we don't need to reconnect to it. Just like we did previously wth the standings, we can use string formatting and the headers list to create the offense table under the nfl schema:
 ```
 cur.execute('''
 CREATE TABLE nfl.offense(
