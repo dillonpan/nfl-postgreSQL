@@ -408,3 +408,45 @@ printsql()
 ('San Francisco 49ers', 28, 'Kyle Juszczyk', 1)  
 ('San Francisco 49ers', 28, 'Marquise Goodwin', 1)  
 
+Q. List the teams where the lead running back has more than twice the amount of carries than the main backup back, ordered by teams.
+This one is a little bit difficult in a single query so I will split this in to two then show a combined query:
+
+First method: We're going to create a view that includes two things, each team and the 2nd highest RB rush attempts. We're going to use a window function and partitioning. Unlike Group By, Partition By will keep all rows and compare running backs within each team and rank them by descending rush attempts via the rank() function. Afterwards, the second query will compare each teams highest rusher to their respective team from the view we built first.
+```
+cur.execute('''
+    CREATE VIEW rb_twos AS(
+        SELECT team, rush_att
+        FROM (SELECT team, name, rush_att, rank() OVER (PARTITION BY team ORDER BY rush_att DESC)
+              FROM nfl.players
+              WHERE position = 'RB') AS test
+        WHERE rank = 2
+    );
+    
+    (SELECT team, name
+     FROM nfl.players
+     WHERE position = 'RB'
+     GROUP BY team, name
+     HAVING MAX(rush_att) > 2*(SELECT rush_att
+                               FROM rb_twos
+                               WHERE rb_twos.team = players.team)
+     ORDER BY team
+    )
+''')
+printsql()
+```
+Here's the second method in which we combined them in to a single query with a subquery. Note that we needed to create an alias 'a' so players isn't used twice.:
+```
+cur.execute('''
+    SELECT a.team, a.name
+    FROM nfl.players a
+    WHERE position = 'RB'
+    GROUP BY a.team, a.name
+    HAVING MAX(a.rush_att) > 2*(SELECT rush_att
+                                FROM (SELECT team, name, rush_att, rank() OVER (PARTITION BY team ORDER BY rush_att DESC)
+                                    FROM nfl.players
+                                    WHERE position = 'RB') AS test
+                                WHERE rank = 2 AND team = a.team)
+    ORDER BY a.team
+''')
+printsql()
+```
