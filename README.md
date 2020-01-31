@@ -379,16 +379,18 @@ printsql()
 ['count']
 (434,)
 
-Perfect! Now that all 3 tables have been created and contain their respective data, we can run some SQL statements to answer some questions:  
+Perfect! Now that all 3 tables have been created and contain their respective data, we can run some SQL statements to answer some questions:
+
 Q1. List the total team passing tds, the players who caught at least 1 td, and the number of catching tds they had this year. Order the query by who caught the most tds first:
 ```
-cur.execute('''SELECT standings.team, offense.pass_tds, players.name, players.rec_tds
-                FROM nfl.standings
-                JOIN nfl.offense ON offense.team = standings.team
-                JOIN nfl.players ON players.team = offense.team
-                WHERE standings.team = 'San Francisco 49ers' AND players.rec_tds >= 1
-                ORDER BY players.rec_tds DESC
-            ''')
+cur.execute('''
+    SELECT standings.team, offense.pass_tds, players.name, players.rec_tds
+    FROM nfl.standings
+    JOIN nfl.offense ON offense.team = standings.team
+    JOIN nfl.players ON players.team = offense.team
+    WHERE standings.team = 'San Francisco 49ers' AND players.rec_tds >= 1
+    ORDER BY players.rec_tds DESC
+''')
 
 printsql()
 ```
