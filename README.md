@@ -479,8 +479,8 @@ cur.execute('''
               WHERE position = 'RB') AS test
         WHERE rank = 2
     );
-    
-    (SELECT team, name
+
+    (SELECT team, name, fan_pts
      FROM nfl.players
      WHERE position = 'RB'
      GROUP BY team, name
@@ -490,13 +490,12 @@ cur.execute('''
      ORDER BY team
     )
 ''')
-
 printsql()
 ```
-Here's the second method in which we combined them in to a single query with a subquery. Note that we needed to create an alias 'a' so players isn't used twice.:
+Here's the second method in which we combined them in to a single query with a subquery. Note that we needed to create an alias 'a' as the players table is being used twice (and to compare with each other):
 ```
 cur.execute('''
-    SELECT a.team, a.name
+    SELECT a.team, a.name, a.fan_pts
     FROM nfl.players a
     WHERE position = 'RB'
     GROUP BY a.team, a.name
@@ -507,7 +506,6 @@ cur.execute('''
                                 WHERE rank = 2 AND team = a.team)
     ORDER BY a.team
 ''')
-
 printsql()
 ```
 ['team', 'name', 'fan_pts']  
