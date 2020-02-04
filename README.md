@@ -379,7 +379,7 @@ printsql()
 ['count']
 (434,)
 
-Perfect! Now that all 3 tables have been created and contain their respective data, we can run some SQL statements to answer some questions:
+Perfect! Now that all 3 tables have been created and contain their respective data, we can run some SQL statements to answer some questions we may have had about the season:
 
 Q1. List the total team passing tds, the players who caught at least 1 td, and the number of catching tds they had this year. Order the query by who caught the most tds first:
 ```
@@ -408,8 +408,66 @@ printsql()
 ('San Francisco 49ers', 28, 'Kyle Juszczyk', 1)  
 ('San Francisco 49ers', 28, 'Marquise Goodwin', 1)  
 
-Q. List the teams where the lead running back has more than twice the amount of carries than the main backup back, ordered by teams.
-This one is a little bit difficult in a single query so I will split this in to two then show a combined query:
+Q2. For each team, list the players with at least 1 reception, their rec_yrds, and how much percentage of the teams receiving yrds they contributed to:
+```
+cur.execute('''
+    SELECT players.team, players.name, players.rec_yrds, ROUND((100.0*players.rec_yrds)/offense.pass_yrds, 2)AS "percentage"
+    FROM nfl.players
+    JOIN nfl.offense ON offense.team = players.team
+    WHERE players.rec_catch > 0
+    GROUP BY players.team, players.name, offense.pass_yrds
+    ORDER BY players.team, percentage DESC
+''')
+
+printsql()
+```
+
+['team', 'name', 'rec_yrds', 'percentage']  
+('Arizona Cardinals', 'Larry Fitzgerald', 804, Decimal('23.12'))  
+('Arizona Cardinals', 'Christian Kirk', 709, Decimal('20.39'))  
+('Arizona Cardinals', 'David Johnson', 370, Decimal('10.64'))  
+('Arizona Cardinals', 'Damiere Byrd', 359, Decimal('10.32'))  
+('Arizona Cardinals', 'Charles Clay', 237, Decimal('6.82'))  
+('Arizona Cardinals', 'Maxx Williams', 202, Decimal('5.81'))  
+('Arizona Cardinals', 'Andy Isabella', 189, Decimal('5.44'))  
+('Arizona Cardinals', 'KeeSean Johnson', 187, Decimal('5.38'))  
+('Arizona Cardinals', 'Chase Edmonds', 105, Decimal('3.02'))  
+('Arizona Cardinals', 'Trent Sherfield', 80, Decimal('2.30'))  
+('Atlanta Falcons', 'Julio Jones', 1394, Decimal('29.57'))  
+('Atlanta Falcons', 'Calvin Ridley', 866, Decimal('18.37'))  
+('Atlanta Falcons', 'Austin Hooper', 787, Decimal('16.69'))  
+etc  
+etc  
+
+Q3. Which teams are in the top 10 in terms of offensive yardage and have an average team age younger than that of an average NFL player age? What are these team's records?
+```
+cur.execute('''
+    SELECT standings.team, standings.wins || '-' || standings.losses AS record,
+    (offense.pass_yrds + offense.rush_yrds) AS total_yrds, ROUND(AVG(players.age), 2)
+    FROM nfl.standings
+    JOIN nfl.offense ON offense.team = standings.team
+    JOIN nfl.players ON players.team = offense.team
+    WHERE standings.team IN (SELECT team
+                             FROM nfl.offense
+                             ORDER BY (offense.pass_yrds + offense.rush_yrds) DESC
+                             LIMIT 10)
+    GROUP BY standings.team, record, total_yrds
+    HAVING AVG(players.age) <  (SELECT AVG(age)
+                                FROM nfl.players)
+    ORDER BY total_yrds DESC
+''')
+
+printsql()
+```
+
+['team', 'record', 'total_yrds', 'round']  
+('Baltimore Ravens', '14-2', 6521, Decimal('25.17'))  
+('Tampa Bay Buccaneers', '7-9', 6366, Decimal('24.64'))  
+('San Francisco 49ers', '13-3', 6097, Decimal('25.46'))  
+('Los Angeles Rams', '9-7', 5998, Decimal('25.20'))  
+('Seattle Seahawks', '11-5', 5991, Decimal('26.07'))  
+
+Q4. List the teams where the lead running back has more than twice the amount of carries than the main backup (2nd highest in carries), ordered by teams. For fun, let's also check out the fantasy points these players had (under standard league settings).)This one is a little bit difficult in a single query so I will split this in to two then show a combined query:
 
 First method: We're going to create a view that includes two things, each team and the 2nd highest RB rush attempts. We're going to use a window function and partitioning. Unlike Group By, Partition By will keep all rows and compare running backs within each team and rank them by descending rush attempts via the rank() function. Afterwards, the second query will compare each teams highest rusher to their respective team from the view we built first.
 ```
@@ -432,6 +490,7 @@ cur.execute('''
      ORDER BY team
     )
 ''')
+
 printsql()
 ```
 Here's the second method in which we combined them in to a single query with a subquery. Note that we needed to create an alias 'a' so players isn't used twice.:
@@ -448,5 +507,28 @@ cur.execute('''
                                 WHERE rank = 2 AND team = a.team)
     ORDER BY a.team
 ''')
+
 printsql()
 ```
+['team', 'name', 'fan_pts']  
+('Atlanta Falcons', 'Devonta Freeman', 139)  
+('Carolina Panthers', 'Christian McCaffrey', 355)  
+('Chicago Bears', 'David Montgomery', 145)  
+('Cincinnati Bengals', 'Joe Mixon', 190)  
+('Cleveland Browns', 'Nick Chubb', 219)  
+('Dallas Cowboys', 'Ezekiel Elliott', 258)  
+('Green Bay Packers', 'Aaron Jones', 266)  
+('Houston Texans', 'Carlos Hyde', 143)  
+('Indianapolis Colts', 'Marlon Mack', 167)  
+('Jacksonville Jaguars', 'Leonard Fournette', 183)  
+('Los Angeles Rams', 'Todd Gurley', 188)  
+('Minnesota Vikings', 'Dalvin Cook', 239)  
+('New England Patriots', 'Sony Michel', 141)  
+('New York Giants', 'Saquon Barkley', 192)  
+('New York Jets', "Le'Veon Bell", 149)  
+('Oakland Raiders', 'Josh Jacobs', 172)  
+('Seattle Seahawks', 'Chris Carson', 196)  
+('Tennessee Titans', 'Derrick Henry', 277)  
+('Washington Redskins', 'Adrian Peterson', 130)  
+
+To further this project, we could always import the team/individual player defensive stats and perform other types of analysis. But for now, this is just an example on how to gather data and use it to develop your own relational database.
